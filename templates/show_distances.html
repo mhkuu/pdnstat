@@ -1,6 +1,3 @@
-{% extends "base.html" %}
-{% block title %}Afstanden{% endblock %}
-{% block content %}
 <script>
     $(document).ready(function() {
         $('#distances').DataTable({
@@ -8,11 +5,9 @@
         });
     });
 </script>
-<h1>Afstanden</h1>
 <table id="distances" class="display" cellspacing="0" width="100%">
     <thead>
         <tr>
-            <th>Collectie</th>
             <th>Compositie 1</th>
             <th>Compositie 2</th>
             <th>Afstand</th>
@@ -21,7 +16,6 @@
     <tbody>
         {% for d in distances %}
         <tr>
-            <td>{{ d.game1.collection.name }}</td>
             <td>{{ d.game1 }}</td>
             <td>{{ d.game2 }}</td>
             <td>{{ d.distance }}</td>
@@ -29,4 +23,3 @@
         {% endfor %}
     </tbody>
 </table>
-{% endblock %}

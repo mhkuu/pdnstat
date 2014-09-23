@@ -7,6 +7,10 @@ import sqlite3
 from pdnstat import hamming_distance
 from flask.ext.sqlalchemy import SQLAlchemy
 
+#####
+# Configuration
+#####
+
 app = Flask(__name__)
 app.config.update(dict(
 #    DATABASE = os.path.join(app.root_path, 'p.db'),
@@ -20,6 +24,10 @@ app.config.update(dict(
     MAX_CONTENT_LENGTH = 100 * 1024
 )) 
 db = SQLAlchemy(app)
+
+#####
+# Models
+#####
 
 class Collection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,7 +61,7 @@ class Game(db.Model):
         return '<Game %r>' % (self.id)
         
     def __str__(self):
-        return '%s (%d)' % (self.author, self.year)
+        return '%s (%s)' % (self.author, self.year if self.year else '?')
         
 class Distance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -71,6 +79,10 @@ class Distance(db.Model):
     def __repr__(self):
         return '<Distance %r>' % self.distance
 
+#####
+# Routes
+#####
+        
 @app.route('/')
 def home():
     return render_template('home.html') 
@@ -81,24 +93,14 @@ def show_collections():
     
 @app.route('/<collection_name>/')
 def show(collection_name):
-    collection = Collection.query.filter_by(name=collection_name).first_or_404()
-    return render_template('show.html', collection=collection, games=collection.games.all())
-    
-@app.route('/games/')
-def show_games():
-    return render_template('show_games.html', games=Game.query.all())
-    
-@app.route('/distances/')
-def show_distances():
-    return render_template('show_distances.html', distances=Distance.query.all())
+    c = Collection.query.filter_by(name=collection_name).first_or_404()
+    g = c.games.all()
+    d = Distance.query.all() # FIXME
+    return render_template('show.html', collection=c, games=g, distances=d)
     
 @app.route('/game/<game_id>')
 def game(game_id):
     return render_template('game.html', game=Game.query.get_or_404(game_id))
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in (app.config['ALLOWED_EXTENSIONS'])
 
 @app.route('/upload/', methods=['GET', 'POST'])
 def upload_pdn():
@@ -131,9 +133,17 @@ def upload_pdn():
             
             db.session.commit()
             flash('File was successfully handled')
-            return redirect(url_for('show_distances'))
+            return redirect(url_for('show', collection_name=c.name))
     else: 
         return render_template('upload.html')
+        
+#####
+# Helpers
+#####
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in (app.config['ALLOWED_EXTENSIONS'])
         
 def check_relation(games): 
     result = list()
@@ -143,6 +153,10 @@ def check_relation(games):
             #if d < 10: 
             result.append([game1, game2, d])
     return result
+
+#####
+# Main
+#####
     
 if __name__ == '__main__':
     app.run()
