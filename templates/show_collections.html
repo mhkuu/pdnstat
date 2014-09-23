@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Collecties{% endblock %}
+{% block content %}
+<script>
+    $(document).ready(function() {
+        $('#collections').DataTable();
+    });
+</script>
+<h1>Collecties</h1>
+<table id="collections" class="display" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th>Naam</th>
+            <th>Actie</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in collections %}
+        <tr>
+            <td>{{ c.name }}</td>
+            <td><a href="{{ url_for('show', collection_name=c.name) }}">Bekijk</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Afstanden{% endblock %}
+{% block content %}
+<script>
+    $(document).ready(function() {
+        $('#distances').DataTable({
+            "order": [[ 2, "asc" ]]
+        });
+    });
+</script>
+<h1>Afstanden</h1>
+<table id="distances" class="display" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th>Collectie</th>
+            <th>Compositie 1</th>
+            <th>Compositie 2</th>
+            <th>Afstand</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in distances %}
+        <tr>
+            <td>{{ d.game1.collection.name }}</td>
+            <td>{{ d.game1 }}</td>
+            <td>{{ d.game2 }}</td>
+            <td>{{ d.distance }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

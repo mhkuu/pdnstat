@@ -24,20 +24,6 @@ def by_author(games):
         authors.append(game.white)
             
     return Counter(authors).most_common()  
-
-def check_relation(games): 
-    result = list()
-    for n, game1 in enumerate(games):
-        for game2 in games[n+1:]:
-            l = pdn_hamming(game1, game2)
-            #if l < 10: 
-            result.append([game1, game2, l])
-    return result
-    
-def pdn_hamming(game1, game2):    
-    string1 = game1.fen_string
-    string2 = game2.fen_string
-    return hamming_distance(string1, string2)
     
 def hamming_distance(s1, s2):
     #Return the Hamming distance between equal-length sequences

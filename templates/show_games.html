@@ -1,0 +1,25 @@
+<script>
+    $(document).ready(function() {
+        $('#games').DataTable();
+    });
+</script>
+<table id="games" class="display" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th>Componist</th>
+            <th>Bron</th>
+            <th>Jaar</th>
+            <th>Acties</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for g in games %}
+        <tr>
+            <td>{{ g.author }}</td>
+            <td>{{ g.source }}</td>
+            <td>{{ g.year | default('', true) }}</td>
+            <td><a href="{{ url_for('game', game_id=g.id) }}">Bekijk</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

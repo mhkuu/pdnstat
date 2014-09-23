@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Home</h1>
+<p><em>PDNStat</em> is een simpele webapplicatie waarmee je een kleine collectie composities in PDN-formaat kunt uploaden en bekijken.
+Er is wat eenvoudige statistiek beschikbaar en je kunt je collectie ook checken op (mogelijke) dubbelen.</p>
+<p>Langzaam zal er - op verzoek - nieuwe functionaliteit worden toegevoegd. PDNStat bevindt zich feitelijk nog in de alfafase: alles wat je zou willen, is theoretisch nog mogelijk.</p>
+<p>Geinteresseerd? Upload dan <a href="{{ url_for('upload_pdn') }}">hier</a> je collectie, 
+of bekijk <a href="{{ url_for('show_collections') }}">hier</a> reeds geuploade collecties!</p>
+{% endblock %}

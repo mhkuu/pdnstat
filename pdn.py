@@ -43,16 +43,13 @@ The basic usage::
 
 class PDNGame(object):
     '''
-    Describes a single chess game in PDN format.
+    Describes a single draughts game in PDN format.
     '''
 
     TAG_ORDER = ['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result',
                  'GameType', 'Setup', 'FEN', 'PlyCount']
 
-    def __init__(self, event=None, site=None, date=None, round=None, 
-                                                         white=None,
-                                                         black=None,
-                                                         result=None):
+    def __init__(self, event=None, site=None, date=None, round=None, white=None, black=None, result=None):
         '''
         Initializes the PDNGame, receiving the required tags.
         '''
