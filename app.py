@@ -6,6 +6,7 @@ import pdn
 import sqlite3
 from pdnstat import hamming_distance
 from flask.ext.sqlalchemy import SQLAlchemy
+from collections import Counter
 
 #####
 # Configuration
@@ -92,11 +93,19 @@ def show_collections():
     return render_template('show_collections.html', collections=Collection.query.all())
     
 @app.route('/<collection_name>/')
-def show(collection_name):
+def collection(collection_name):
     c = Collection.query.filter_by(name=collection_name).first_or_404()
     g = c.games.all()
-    d = Distance.query.all() # FIXME
-    return render_template('show.html', collection=c, games=g, distances=d)
+    
+    years = list() 
+    for game in g:
+        if game.year:
+            years.append(game.year)
+    data = sorted(Counter(years).items())
+    print data
+    
+    d = Distance.query.filter(id<100) # FIXME
+    return render_template('collection.html', collection=c, games=g, distances=d, data=data)
     
 @app.route('/game/<game_id>')
 def game(game_id):

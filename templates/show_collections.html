@@ -18,7 +18,7 @@
         {% for c in collections %}
         <tr>
             <td>{{ c.name }}</td>
-            <td><a href="{{ url_for('show', collection_name=c.name) }}">Bekijk</a></td>
+            <td><a href="{{ url_for('collection', collection_name=c.name) }}">Bekijk</a></td>
         </tr>
         {% endfor %}
     </tbody>

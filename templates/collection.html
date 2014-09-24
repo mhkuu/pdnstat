@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Collectie bekijken{% endblock %}
+{% block content %}
+<script>
+    $(function() {
+        drawChart();
+        $( "#tabs" ).tabs();
+    });
+</script>
+<h1>Collectie <em>{{ collection.name }}</em></h1>
+<p>Deze collectie bevat {{ games | count }} composities.</p>
+<div id="tabs">
+  <ul>
+    <li><a href="#tabs-1">Overzicht</a></li>
+    <li><a href="#tabs-2">Distributie per jaar</a></li>
+    <li><a href="#tabs-3">Afstanden</a></li>
+    <!--<li><a href="#tabs-4">Statistiek</a></li>-->
+  </ul>
+  <br />
+  <br />
+  <div id="tabs-1">{% include "show_games.html" %}</div>
+  <div id="tabs-2">{% include "graph_year.html" %}</div>
+  <div id="tabs-3">{% include "show_distances.html" %}</div>
+  <!--<div id="tabs-4"></div>-->
+</div>
+{% endblock %}
