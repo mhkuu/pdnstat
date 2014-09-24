@@ -11,6 +11,7 @@
             <th>Compositie 1</th>
             <th>Compositie 2</th>
             <th>Afstand</th>
+            <th>Acties</th>
         </tr>
     </thead>
     <tbody>
@@ -19,6 +20,7 @@
             <td>{{ d.game1 }}</td>
             <td>{{ d.game2 }}</td>
             <td>{{ d.distance }}</td>
+            <td><a href="{{ url_for('distance', distance_id=d.id) }}">Bekijk</a></td>
         </tr>
         {% endfor %}
     </tbody>

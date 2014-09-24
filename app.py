@@ -101,6 +101,10 @@ def show(collection_name):
 @app.route('/game/<game_id>')
 def game(game_id):
     return render_template('game.html', game=Game.query.get_or_404(game_id))
+    
+@app.route('/distance/<distance_id>')
+def distance(distance_id):
+    return render_template('distance.html', distance=Distance.query.get_or_404(distance_id))
 
 @app.route('/upload/', methods=['GET', 'POST'])
 def upload_pdn():
