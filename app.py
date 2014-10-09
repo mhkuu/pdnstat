@@ -22,7 +22,7 @@ app.config.update(dict(
     PASSWORD = 'default',
     UPLOAD_FOLDER = 'uploads/',
     ALLOWED_EXTENSIONS = set(['pdn']),
-    MAX_CONTENT_LENGTH = 100 * 1024
+    MAX_CONTENT_LENGTH = 500 * 1024
 )) 
 db = SQLAlchemy(app)
 
@@ -50,8 +50,8 @@ class Game(db.Model):
     pdn = db.Column(db.Text)
     fen_string = db.Column(db.String(100))
 
-    def __init__(self, c, author, source, year, pdn, fen_string):
-        self.collection = c
+    def __init__(self, collection, author, source, year, pdn, fen_string):
+        self.collection = collection
         self.author = author
         self.source = source
         self.year = year
@@ -83,6 +83,10 @@ class Distance(db.Model):
 #####
 # Routes
 #####
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return render_template('upload.html', error='Bestand te groot')
         
 @app.route('/')
 def home():
@@ -102,9 +106,8 @@ def collection(collection_name):
         if game.year:
             years.append(game.year)
     data = sorted(Counter(years).items())
-    print data
     
-    d = Distance.query.filter(id<100) # FIXME
+    d = Distance.query.filter(id>100) # FIXME
     return render_template('collection.html', collection=c, games=g, distances=d, data=data)
     
 @app.route('/game/<game_id>')
@@ -118,53 +121,68 @@ def distance(distance_id):
 @app.route('/upload/', methods=['GET', 'POST'])
 def upload_pdn():
     if request.method == 'POST':
+        error = None
         file = request.files['file']
-        if file and allowed_file(file.filename):
+        if not file: 
+            error = 'Geen bestand geselecteerd'
+        elif not allowed_file(file.filename):
+            error = 'Bestand niet geaccepteerd'
+        else: 
             filename = secure_filename(file.filename)
             #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             
-            c = Collection(request.form['name'].lower())
-            db.session.add(c)
-            db.session.commit()
-            
-            gs = list()
-            games = pdn.loads(file.read())
-            for game in games: 
-                year = None
-                if game.date != '?':
-                    year = game.date[:4]
-                g = Game(c, game.white, game.event, year, game.dumps(), game.fen_string)
-                db.session.add(g)
-                gs.append(g)
-            
-            db.session.commit()
-            results = check_relation(gs)
-            
-            for result in results: 
-                d = Distance(result[0], result[1], result[2])
-                db.session.add(d)
-            
-            db.session.commit()
-            flash('File was successfully handled')
-            return redirect(url_for('show', collection_name=c.name))
+            collection_name = request.form['name'].lower()
+            if not collection_name: 
+                error = 'Geen naam opgegegeven'
+            else: 
+                c = Collection.query.filter_by(name=collection_name).first()
+                if c: 
+                    error = 'Naam is al in gebruik: verzin een andere naam!'
+                else: 
+                    upload_file(file, collection_name)
+                    return redirect(url_for('collection', collection_name=collection_name))
+        return render_template('upload.html', error=error)
     else: 
         return render_template('upload.html')
-        
+    
 #####
 # Helpers
 #####
 
+def upload_file(file, collection_name):
+    c = Collection(collection_name)
+    db.session.add(c)
+    db.session.commit()
+    
+    gs = list()
+    games = pdn.loads(file.read().decode('cp1252'))
+    for game in games: 
+        year = None
+        if game.date != '?':
+            year = game.date[:4]
+        g = Game(c, game.white, game.event, year, unicode(game.dumps(), 'utf-8'), game.fen_string)
+        db.session.add(g)
+        gs.append(g)
+    
+    db.session.commit()
+    results = check_relation(gs)
+    
+    for result in results: 
+        d = Distance(result[0], result[1], result[2])
+        db.session.add(d)
+    
+    db.session.commit()
+
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in (app.config['ALLOWED_EXTENSIONS'])
+    return '.' in filename and filename.rsplit('.', 1)[1] in (app.config['ALLOWED_EXTENSIONS'])
         
 def check_relation(games): 
     result = list()
     for n, game1 in enumerate(games):
         for game2 in games[n+1:]:
             d = hamming_distance(game1.fen_string, game2.fen_string)
-            #if d < 10: 
-            result.append([game1, game2, d])
+            if d < 10: 
+                result.append([game1, game2, d])
     return result
 
 #####

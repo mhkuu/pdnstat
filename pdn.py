@@ -226,4 +226,4 @@ def dumps(games):
             
         all_dumps.append(dump.strip())
             
-    return '\n\n\n'.join(all_dumps)
+    return '\n\n\n'.join(all_dumps).encode('utf-8')

@@ -2,8 +2,11 @@
 {% block title %}Upload je PDN{% endblock %}
 {% block content %}
 <h1>Upload je PDN-bestand</h1>
+{% if error %}
+<p style="color:red"><strong>Fout:</strong> {{ error }}</p>
+{% endif %}
 <form action="" method="post" enctype="multipart/form-data" class="pure-form">
-    <input type="text" name="name" placeholder="name">
+    <input type="text" name="name" placeholder="Naam collectie">
     <input type="file" name="file">
     <input type="submit" value="Upload" class="pure-button pure-button-primary">
 </form>
