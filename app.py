@@ -1,12 +1,15 @@
-import os
+# Flask
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
 from werkzeug import secure_filename
-import pdn
-import sqlite3
-from pdnstat import hamming_distance
 from flask.ext.sqlalchemy import SQLAlchemy
+import sqlite3
+# PDN-related
+import pdn
+from pdnstat import hamming_distance
+# Python standard libraries
 from collections import Counter
+import os
 
 #####
 # Configuration
@@ -14,7 +17,6 @@ from collections import Counter
 
 app = Flask(__name__)
 app.config.update(dict(
-#    DATABASE = os.path.join(app.root_path, 'p.db'),
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(app.root_path, 'p.db'),
     DEBUG = True,
     SECRET_KEY = 'development key',
@@ -66,13 +68,16 @@ class Game(db.Model):
         
 class Distance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    collection_id = db.Column(db.Integer, db.ForeignKey('collection.id'))
+    collection = db.relationship('Collection', foreign_keys='Distance.collection_id', backref=db.backref('distances', lazy='dynamic'))
     game1_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     game1 = db.relationship('Game', foreign_keys='Distance.game1_id')
     game2_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     game2 = db.relationship('Game', foreign_keys='Distance.game2_id')
     distance = db.Column(db.Integer)
 
-    def __init__(self, game1, game2, distance):
+    def __init__(self, collection, game1, game2, distance):
+        self.collection = collection
         self.game1 = game1
         self.game2 = game2
         self.distance = distance
@@ -80,13 +85,18 @@ class Distance(db.Model):
     def __repr__(self):
         return '<Distance %r>' % self.distance
 
+        
 #####
-# Routes
+# Error handlers
 #####
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
     return render_template('upload.html', error='Bestand te groot')
+
+#####
+# Routes
+#####
         
 @app.route('/')
 def home():
@@ -100,15 +110,8 @@ def show_collections():
 def collection(collection_name):
     c = Collection.query.filter_by(name=collection_name).first_or_404()
     g = c.games.all()
-    
-    years = list() 
-    for game in g:
-        if game.year:
-            years.append(game.year)
-    data = sorted(Counter(years).items())
-    
-    d = Distance.query.filter(id>100) # FIXME
-    return render_template('collection.html', collection=c, games=g, distances=d, data=data)
+    d = c.distances.all()
+    return render_template('collection.html', collection=c, games=g, distances=d, data=year_graph(g))
     
 @app.route('/game/<game_id>')
 def game(game_id):
@@ -168,7 +171,7 @@ def upload_file(file, collection_name):
     results = check_relation(gs)
     
     for result in results: 
-        d = Distance(result[0], result[1], result[2])
+        d = Distance(c, result[0], result[1], result[2])
         db.session.add(d)
     
     db.session.commit()
@@ -185,6 +188,13 @@ def check_relation(games):
                 result.append([game1, game2, d])
     return result
 
+def year_graph(games): 
+    years = list() 
+    for game in games:
+        if game.year:
+            years.append(game.year)
+    return sorted(Counter(years).items())
+    
 #####
 # Main
 #####

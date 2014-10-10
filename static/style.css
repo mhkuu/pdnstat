@@ -1,0 +1,19 @@
+a {
+    color: blue;
+    text-decoration: none;
+}
+
+.wrapper {
+    margin-top: 1em; 
+}
+
+.header {
+    float: right; 
+    margin: 1em; 
+}
+
+.content {
+    padding: 1em; 
+    border: 1px dotted; 
+    border-radius: 25px;
+}

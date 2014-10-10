@@ -27,4 +27,5 @@
     </div>
 </div>
 <p>Afstand: {{ distance.distance }}</p>
+<p><a href="{{ url_for('collection', collection_name=distance.collection.name) }}">Terug naar collectie</a></p>
 {% endblock %}
