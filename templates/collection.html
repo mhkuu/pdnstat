@@ -14,13 +14,14 @@
     <li><a href="#tabs-1">Overzicht</a></li>
     <li><a href="#tabs-2">Distributie per jaar</a></li>
     <li><a href="#tabs-3">Afstanden</a></li>
-    <!--<li><a href="#tabs-4">Statistiek</a></li>-->
+    <li><a href="#tabs-4"><em>Heat map</em> van de afstanden</a></li>
   </ul>
   <br />
   <br />
   <div id="tabs-1">{% include "show_games.html" %}</div>
   <div id="tabs-2">{% include "graph_year.html" %}</div>
   <div id="tabs-3">{% include "show_distances.html" %}</div>
+  <div id="tabs-4">{% include "heat_matrix.html" %}</div>
   <!--<div id="tabs-4"></div>-->
 </div>
 {% endblock %}

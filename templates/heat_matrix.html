@@ -1,0 +1,79 @@
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/heatmap.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+<script> 
+$(function () {
+
+    $('#container').highcharts({
+
+        chart: {
+            type: 'heatmap',
+            marginTop: 40,
+            marginBottom: 40
+        },
+
+
+        title: {
+            text: 'Heat map van de afstanden'
+        },
+
+        xAxis: {
+            categories: {{ game_names | tojson }},
+            labels:
+            {
+              enabled: false
+            }
+        },
+
+        yAxis: {
+            categories: {{ game_names | tojson }},
+            title: 'Compositie'
+        },
+
+        colorAxis: {
+            min: 0,
+            minColor: '#FFFFFF',
+            maxColor: Highcharts.getOptions().colors[0]
+        },
+
+        legend: {
+            align: 'right',
+            layout: 'vertical',
+            margin: 0,
+            verticalAlign: 'top',
+            y: 25,
+            symbolHeight: 320
+        },
+
+        tooltip: {
+            formatter: function () {
+                return '<strong>' + this.series.xAxis.categories[this.point.x] + '</strong> heeft een afstand van <em>' +
+                    this.point.value + '</em> tot <strong>' + this.series.yAxis.categories[this.point.y] + '</strong>';
+            }
+        },
+
+        series: [{
+            name: 'Afstand',
+            borderWidth: 1,
+            data: {{ d_data | tojson }},
+            dataLabels: {
+                enabled: false,
+                color: 'black',
+                style: {
+                    textShadow: 'none',
+                    HcTextStroke: null
+                }
+            },
+            //events: {
+            //    click: function(e) {
+            //        alert(e.point.x + ' ' + e.point.y); // link to comparison
+            //    }
+            //}
+        }]
+
+    });
+});
+</script>
+
+<div id="container" style="height: 400px; width: 800px; margin: 0 auto"></div>
+

@@ -46,14 +46,16 @@ class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     collection_id = db.Column(db.Integer, db.ForeignKey('collection.id'))
     collection = db.relationship('Collection', foreign_keys='Game.collection_id', backref=db.backref('games', lazy='dynamic'))
+    nr = db.Column(db.Integer)
     author = db.Column(db.String(200))
     source = db.Column(db.String(200))
     year = db.Column(db.Integer)
     pdn = db.Column(db.Text)
     fen_string = db.Column(db.String(100))
 
-    def __init__(self, collection, author, source, year, pdn, fen_string):
+    def __init__(self, collection, nr, author, source, year, pdn, fen_string):
         self.collection = collection
+        self.nr = nr
         self.author = author
         self.source = source
         self.year = year
@@ -111,7 +113,21 @@ def collection(collection_name):
     c = Collection.query.filter_by(name=collection_name).first_or_404()
     g = c.games.all()
     d = c.distances.all()
-    return render_template('collection.html', collection=c, games=g, distances=d, data=year_graph(g))
+
+    gn = list() 
+    d_data = list() 
+    for distance in d: 
+        dd1 = [distance.game1.nr, distance.game2.nr, distance.distance] 
+        dd2 = [distance.game2.nr, distance.game1.nr, distance.distance] 
+        d_data.append(dd1)
+        d_data.append(dd2)
+        
+    for game in g:
+        dd = [game.nr, game.nr, 0] 
+        d_data.append(dd)
+        gn.append(str(game))
+        
+    return render_template('collection.html', collection=c, games=g, distances=d, data=year_graph(g), game_names=gn, d_data=d_data)
     
 @app.route('/game/<game_id>')
 def game(game_id):
@@ -125,14 +141,14 @@ def distance(distance_id):
 def upload_pdn():
     if request.method == 'POST':
         error = None
-        file = request.files['file']
-        if not file: 
+        f = request.files['file']
+        if not f: 
             error = 'Geen bestand geselecteerd'
-        elif not allowed_file(file.filename):
+        elif not allowed_file(f.filename):
             error = 'Bestand niet geaccepteerd'
         else: 
-            filename = secure_filename(file.filename)
-            #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            filename = secure_filename(f.filename)
+            #f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             
             collection_name = request.form['name'].lower()
             if not collection_name: 
@@ -142,7 +158,7 @@ def upload_pdn():
                 if c: 
                     error = 'Naam is al in gebruik: verzin een andere naam!'
                 else: 
-                    upload_file(file, collection_name)
+                    upload_file(f, collection_name)
                     return redirect(url_for('collection', collection_name=collection_name))
         return render_template('upload.html', error=error)
     else: 
@@ -152,18 +168,18 @@ def upload_pdn():
 # Helpers
 #####
 
-def upload_file(file, collection_name):
+def upload_file(f, collection_name):
     c = Collection(collection_name)
     db.session.add(c)
     db.session.commit()
     
     gs = list()
-    games = pdn.loads(file.read().decode('cp1252'))
-    for game in games: 
+    games = pdn.loads(f.read())
+    for n, game in enumerate(games): 
         year = None
         if game.date != '?':
             year = game.date[:4]
-        g = Game(c, game.white, game.event, year, unicode(game.dumps(), 'utf-8'), game.fen_string)
+        g = Game(c, n, game.white, game.event, year, unicode(game.dumps(), 'utf-8'), game.fen_string)
         db.session.add(g)
         gs.append(g)
     
@@ -184,8 +200,8 @@ def check_relation(games):
     for n, game1 in enumerate(games):
         for game2 in games[n+1:]:
             d = hamming_distance(game1.fen_string, game2.fen_string)
-            if d < 10: 
-                result.append([game1, game2, d])
+            #if d < 10: 
+            result.append([game1, game2, d])
     return result
 
 def year_graph(games): 
